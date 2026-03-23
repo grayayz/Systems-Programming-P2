@@ -1,0 +1,93 @@
+<<CONTENTS:>>
+-p1:
+    compare.whatever u used
+    Makefile
+    README.txt
+    AUTHOR.txt
+
+<<JENSON-SHANNON DISTANCE EXPLAINED>>
+*VIDEO DESCRIPTION:
+-measure of how different two probability distributions are from 
+each other
+-measures the similarity between two distributions regardless of which
+distribution is considered the reference.
+-steps:
+    calculate the average (M) of two probability distributions (P and Q)
+    calculate the KL divergence between P&M and Q&M
+    THEN, calculate the mean of the 2 KL divergences you found
+*PROGRAM DESCRIPTION
+-Fi(w): the frequency of word <w> in file <i>
+    ->IF <w> is not in file <i>, Fi(w) = 0
+-steps:
+    ->first calculate the mean frequency (average of its frequencies in the 2 files)
+    ->compute the KLD between each file and the mean (add the frequencies of each word in the file
+    scaled by the base-2 logarithm of the frequency divided by the mean frequency for that word)
+    the result will be a value between 0 and 1
+    ->then, calculate the JSD by getting the square root of the mean KLD between the files and mean distribution
+
+<<USER INTERFACE>>
+-calculate the JSD between the word frequencies of a pair of files AND output the path names of the files
+being compared.
+-program takes 1+ arguments
+    ->argument: the name of (or path to) a file/directory
+-file name: added to the set of files to examine
+-directory name: added to the set of directories to traverse
+
+<<ERROR HANDLING>>
+-EXCEPTION: any file or directory whose name begins with a period is SKIPPED
+-Entries that are not directories that do not end with the specified suffix are ignored
+-Rounding errors will be ignored (not sure if there needs to be a special case for that)
+-Punctuation will be ignored
+-If file or directory can't be opened, report an error (recommended: perror() with the name of the file/directory to report
+the error). OR exit with status EXIT_FAILURE when program completes
+-Unexpected error: malloc() returns NULL -> program terminates immediately.
+-If the collection phase found fewer than 2 files, report an error and exit. 
+    ->problems in collection phase: any numeric errors(like word frquencies outside range [0,1])
+    ->can check these using assert()
+
+<<WORD FREQUENCY DISTRIBUTION>>
+-frequency: ((# of times the word appears)/(total # of words))
+    ->ex: spam eggs bacon spam
+        4 words
+        spam: 2/4 = 1/2 = 0.5
+        eggs/bacon: 1/4 = 0.25
+-word frequency distribution (WFD): list of every word that occurs at least once in the file
++ its frequency
+    ->the frequency for all the words will add up to 1
+    ->ex: I can't understand thieves' cant
+        WORD            FREQUENCY
+        I               0.2
+        cant            0.4
+        understand      0.2
+        thieves         0.2
+-program reads the file and determines what words it contains
+    ->words are seperated by whitespace characters
+    ->words are case-insensitive (convert to upper/lower case while reading)
+-to compute WFD, keep a list of every word found in the file and its count
+    ->each time a word is encountered, look for it in the list and increment its count by 1
+    ->will prolly need a for-loop to do this
+
+<<DATA STRUCTURE>>
+-need to maintain a list of mappings between words and counts (later frequencies)
+    ->professors recommended idea: use a linked list/use a structure that iterates in lexicographic order
+-word storage is dynamically allocated (MALLOC for word storage)
+-MUST USE POSIX FXNS open() read() AND close() FOR READING FILES
+-CAN USE sqrt() and log2() is fine but u have to use -lm to tell GCC to use the 
+math lib when linking
+
+<<PROGRAM ORGANIZATION>>
+-Collection phase:
+    ->recursively traverse directories/read files to find the WFD
+-Analysis phase:
+    ->compute the JSD and combined word count for each pair of files
+    ->for each comparison:
+        name of files being compared
+        combined word count
+        the JSD
+    ->if there are n files, there will be 1/2n(n+1) comparisons
+    ->recommended: array of structs, compute the results for each pairing, then sort array using qsort()
+
+<<DEBUGGING>>
+-use the DEBUG macro trick (idk what this is lol)
+-if malloc() or pthread_mutex_lock() (hello what is that) fails, write error checks or define a macro to write
+them for u
