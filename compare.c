@@ -6,7 +6,6 @@
 
 #define SUFFIX ".txt"
 #define BUFFER_SIZE 1024
-#define MAX_WORD_LENGTH 1024
 
 //need a linked list of mappings between words and counts (later frequencies)/iterate in lexigocraphic order
 typedef struct wfd_node{
@@ -81,7 +80,7 @@ file_wfd *process_file(const char *path){
     char buf[BUFFER_SIZE];   // buffer to read into
     size_t bytes_read;
     int word_length = 0;
-    char word_buf[MAX_WORD_LENGTH];
+    char *word_buf = malloc(sizeof(char) * 1024);
     while ((bytes_read = read(fd, buf, sizeof(buf))) > 0){
         for (int i = 0; i < bytes_read; i++){
             char c = buf[i];
@@ -109,6 +108,6 @@ file_wfd *process_file(const char *path){
     }
     frequency(new_file->node, new_file->total_word_count);
     close(fd);
+    free(word_buf);
     return new_file;
 } 
-
