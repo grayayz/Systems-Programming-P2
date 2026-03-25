@@ -1,8 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
+#include <ctype.h>
 
 #define SUFFIX ".txt"
+#define BUFFER_SIZE 1024
+#define MAX_WORD_LENGTH 1024
 
 //need a linked list of mappings between words and counts (later frequencies)/iterate in lexigocraphic order
 typedef struct wfd_node{
@@ -63,3 +67,48 @@ void frequency(wfd_node *head, int total_words){
         current = current->next;
     }
 }
+
+file_wfd *process_file(const char *path){
+    //read a file using open/read/close, tokenize into words,
+    int fd = open(path, O_RDONLY);
+    if (fd == -1){
+        fprintf(stderr, "Error opening file %s\n", path);
+        perror("open");
+        return NULL;
+    }
+    file_wfd *new_file = malloc(sizeof(file_wfd));
+    new_file->file_path = strdup(path);
+    char buf[BUFFER_SIZE];   // buffer to read into
+    size_t bytes_read;
+    int word_length = 0;
+    char word_buf[MAX_WORD_LENGTH];
+    while ((bytes_read = read(fd, buf, sizeof(buf))) > 0){
+        for (int i = 0; i < bytes_read; i++){
+            char c = buf[i];
+            if ((isalpha(c)) || (isdigit(c)) || (c == '-')){ //if its a word character
+                word_buf[word_length++] = c; //accumulate
+            } else{
+                if (word_length >0){
+                    for (int j = 0; j < word_length; j++){
+                        word_buf[j] = tolower(word_buf[j]);
+                    }
+                    word_buf[word_length] = '\0';
+                    add_word(new_file, word_buf);
+                    new_file->total_word_count++;
+                    word_length = 0;
+                }
+            }
+        }
+    }
+    if (word_length > 0) {
+        for (int j = 0; j < word_length; j++)
+            word_buf[j] = tolower(word_buf[j]);
+        word_buf[word_length] = '\0';
+        add_word(new_file, word_buf);
+        new_file->total_word_count++;
+    }
+    frequency(new_file->node, new_file->total_word_count);
+    close(fd);
+    return new_file;
+} 
+
