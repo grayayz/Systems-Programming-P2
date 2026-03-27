@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g -fsanitize = address, undefined
+CFLAGS = -Wall -Wextra -g -fsanitize=address,undefined
 LDFLAGS = -lm
 
 compare: compare.c
