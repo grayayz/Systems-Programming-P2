@@ -140,8 +140,11 @@ Janine:
   -Implemented methods process_file, frequency, collect_files
 
 Tony:
-
-  - 
+  - analysis phase: pair_analysis, analysis_pair_count, analysis_phase, analysis_exit_if_too_few_files
+  - JSD: merge two sorted wfd lists, mean freq per word, KLD terms with log2, sqrt for final distance
+  - qsort comparator (descending combined_word_count); asserts on frequencies in [0,1]
+  - main: copy collected files into a contiguous file_wfd row, run analysis, printf("%.5f ...") per pair, free results
+  - sample .txt fixtures in repo root and testdir/ for manual runs
 
 Both partners:
   - Designed data structures together
