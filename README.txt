@@ -143,8 +143,3 @@ Both partners:
   - Designed data structures together
   - Wrote and ran test cases together
   - Wrote README together
-
-  - 
-
-Both partners:
-  - 
