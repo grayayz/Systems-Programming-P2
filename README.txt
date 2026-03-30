@@ -65,8 +65,48 @@ collect_files() recursively traverses a path using stat/opendir/readdir:
   - The files array and all its contents are freed at the end of main()
 
 **TEST PLAN**
-[tests we did here]
 
+TEST 1 - Similar files (low JSD):
+sports1.txt vs sports2.txt
+output: 0.50000 sports1.txt sports2.txt
+expected: low JSD since files share vocabulary (basketball, player, team, etc.)
+result: PASS
+
+TEST 2 - Similar files (high JSD):
+cooking.txt vs tech.txt
+output: 0.86623 cooking.txt tech.txt
+expected: high JSD since files share no vocabulary
+result: PASS
+
+TEST 3 - Directory traversal
+./compare testdir/
+expected: recursively collects all .txt files, computes all pairs
+result: PASS — all pairs printed, sorted by combined word count descending
+
+TEST 4 - Single file (too few files):
+./compare sports1.txt
+expected: error message and non-zero exit
+result: PASS — "compare: fewer than two input files after collection"
+
+TEST 5 - Nonexistent file:
+./compare fake.txt sports1.txt
+expected: stat error printed, exit (fake.txt does not exist)
+result: PASS
+
+TEST 6 - Empty file:
+./compare empty.txt sports1.txt
+expected: warning printed, file skipped, exit due to too few files
+result: PASS — "Warning: skipping empty file empty.txt"
+
+TEST 7 - Case normalization:
+mixed_case.txt contains "The CAT sat on the MAT the Cat SAT ON THE mat"
+expected: all variants of "the", "cat", "sat", "mat" merge into one entry each
+result: PASS — confirmed via JSD comparison with hyphenated.txt giving 0.00000
+
+TEST 8 - Hyphenated words:
+hyphenated.txt contains "well-known state-of-the-art up-to-date"
+expected: hyphens treated as word characters, whole token kept as one word
+result: PASS
 
 **COMPILATION AND EXECUTION**
 
@@ -90,9 +130,19 @@ Error detection tests:
 **CONTRIBUTIONS**
 
 Janine:
-  -
+  -Worked on collection phase
+  -Implemented helper methods: add_word, has_suffix, free_wfd, free_file_wfd
+  -Implemented data structures wfd_node and file_wfd
+  -Implemented methods process_file, frequency, collect_files
 
 Tony:
+
+  - 
+
+Both partners:
+  - Designed data structures together
+  - Wrote and ran test cases together
+  - Wrote README together
 
   - 
 
