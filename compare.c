@@ -228,7 +228,9 @@ file_wfd *process_file(const char *path){
         for (int i = 0; i < (int)bytes_read; i++){
             char c = buf[i];
             if ((isalpha(c)) || (isdigit(c)) || (c == '-')){ //if its a word character
+                if (word_length < 1023){
                 word_buf[word_length++] = c; //accumulate
+                }
             } else{
                 if (word_length >0){
                     for (int j = 0; j < word_length; j++){
@@ -300,6 +302,11 @@ void collect_files(const char *path, int is_explicit, file_wfd ***files, int *co
         //file
         if (is_explicit || has_suffix(path) == 1){
             file_wfd *new_file = process_file(path);
+            if (new_file->total_word_count == 0) {
+                fprintf(stderr, "Warning: skipping empty file %s\n", path);
+                free_file_wfd(new_file);
+                return;
+}
             if (new_file == NULL){
                 return;
             }
