@@ -99,13 +99,17 @@ expected: warning printed, file skipped, exit due to too few files
 result: PASS — "Warning: skipping empty file empty.txt"
 
 TEST 7 - Case normalization:
-mixed_case.txt contains "The CAT sat on the MAT the Cat SAT ON THE mat"
-expected: all variants of "the", "cat", "sat", "mat" merge into one entry each
-result: PASS — confirmed via JSD comparison with hyphenated.txt giving 0.00000
+file: mixed_case.txt (repeated words in varying cases)
+command: ./compare mixed_case.txt repeated_words.txt
+expected: all case variants merge into one entry after lowercasing
+output: 0.32654 mixed_case.txt repeated_words.txt
+result: PASS
 
 TEST 8 - Hyphenated words:
-hyphenated.txt contains "well-known state-of-the-art up-to-date"
+file: hyphenated.txt (words containing hyphens)
+command: ./compare hyphenated.txt mixed_case.txt
 expected: hyphens treated as word characters, whole token kept as one word
+output: 1.00000 hyphenated.txt mixed_case.txt
 result: PASS
 
 **COMPILATION AND EXECUTION**
