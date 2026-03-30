@@ -275,15 +275,22 @@ int has_suffix(const char *filename){
 
 
 void collect_files(const char *path, int is_explicit, file_wfd ***files, int *count, int *capacity){
+    // strip trailing slash
+    char clean_path[BUFFER_SIZE];
+    strncpy(clean_path, path, BUFFER_SIZE - 1);
+    clean_path[BUFFER_SIZE - 1] = '\0';
+    int plen = strlen(clean_path);
+    if (plen > 1 && clean_path[plen-1] == '/')
+        clean_path[plen-1] = '\0';
+
     struct stat buf;
-    int sf = stat(path, &buf);
+    int sf = stat(clean_path, &buf);  // use clean_path
     if (sf == -1) {
         perror("stat");
         return;
     }
     if (S_ISDIR(buf.st_mode)){
-        //is directory
-        DIR *dir = opendir(path);
+        DIR *dir = opendir(clean_path);  // use clean_path
         char fullpath[BUFFER_SIZE];
         if (dir == NULL){
             perror("opendir");
@@ -294,24 +301,27 @@ void collect_files(const char *path, int is_explicit, file_wfd ***files, int *co
             if (de->d_name[0] == '.'){
                 continue;
             }
-            snprintf(fullpath, sizeof(fullpath), "%s/%s", path, de->d_name);
-            collect_files(fullpath, 0, files, count, capacity);
+        int written = snprintf(fullpath, sizeof(fullpath), "%s/%s", clean_path, de->d_name);
+        if (written >= (int)sizeof(fullpath)) {
+            fprintf(stderr, "Warning: path too long, skipping %s/%s\n", clean_path, de->d_name);
+            continue;
+        }
+        collect_files(fullpath, 0, files, count, capacity);
         }
         closedir(dir);
-    } else if ((S_ISREG(buf.st_mode))){
-        //file
-        if (is_explicit || has_suffix(path) == 1){
-            file_wfd *new_file = process_file(path);
-            if (new_file->total_word_count == 0) {
-                fprintf(stderr, "Warning: skipping empty file %s\n", path);
-                free_file_wfd(new_file);
-                return;
-}
+    } else if (S_ISREG(buf.st_mode)){
+        if (is_explicit || has_suffix(clean_path) == 1){
+            file_wfd *new_file = process_file(clean_path);  // use clean_path
             if (new_file == NULL){
                 return;
             }
+            if (new_file->total_word_count == 0) {
+                fprintf(stderr, "Warning: skipping empty file %s\n", clean_path);
+                free_file_wfd(new_file);
+                return;
+            }
             if (*count == *capacity){
-                *capacity*=2;
+                *capacity *= 2;
                 *files = realloc(*files, *capacity * sizeof(file_wfd *));
             }
             (*files)[*count] = new_file;
